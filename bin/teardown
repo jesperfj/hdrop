@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+
+if(!process.argv[2]) {
+  console.log("service name missing.");
+  process.exit(1);
+}
+
+var name = 'hdrop-'+process.argv[2]
+console.log("Tearing down hdrop resource named "+name);
+console.log("Non-empty S3 buckets will not be deleted.")
+var AWS = require('aws-sdk');
+AWS.config.region = 'us-east-1';
+
+var cf = new AWS.CloudFormation();
+cf.deleteStack({ StackName: name }, function(err,data) {
+  if(err) {
+    console.log(err);
+    process.exit(1);
+  } else {
+    console.log("Deletion in progress.");
+    console.log(data);
+  }
+})

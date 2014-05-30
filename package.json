@@ -1,0 +1,14 @@
+{
+  "name": "hdrop",
+  "version": "0.0.1",
+  "description": "Simple dropbox service backed by S3",
+  "main": "index.js",
+  "author": "Jesper Joergensen",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.3.1",
+    "aws-sdk": "^2.0.0-rc.18",
+    "dotenv": "^0.2.8",
+    "node-uuid": "^1.4.1"
+  }
+}

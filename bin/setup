@@ -1,0 +1,54 @@
+#!/usr/bin/env node
+
+if(!process.argv[2]) {
+  console.log("service name missing.");
+  process.exit(1);
+}
+
+var name = 'hdrop-'+process.argv[2]
+console.log("Setting up hdrop resource named "+name);
+var AWS = require('aws-sdk');
+AWS.config.region = 'us-east-1';
+var cf = new AWS.CloudFormation();
+
+function createStack(name,formation) {
+  cf.createStack({
+    StackName: name,
+    Capabilities: [ 'CAPABILITY_IAM' ],
+    TemplateBody: formation,
+    TimeoutInMinutes: 2
+  }, function(err,data) {
+    if(err) {
+      console.log(err);
+      process.exit(1);
+    } else {
+      process.stdout.write("Creating stack..");
+      stackOutput(name);
+    }
+  })
+}
+
+function stackOutput(name) {
+  process.stdout.write('.')
+  cf.describeStacks({ StackName: name }, function(err,data) {
+    if(err) {
+      console.log(err);
+      process.exit(1);
+    } else {
+      if(data.Stacks[0].StackStatus=='CREATE_IN_PROGRESS') {
+        setTimeout(stackOutput, 5000, name);
+      } else {
+        console.log('');
+        console.log(data.Stacks[0].Outputs.map(function(p) { return p.OutputKey+'='+p.OutputValue }).join('\n'));
+      }
+    }
+  })
+}
+
+var fs = require('fs');
+fs.readFile( __dirname + '/../formation.json', function (err, data) {
+  if (err) {
+    throw err; 
+  }
+  createStack(name, data.toString());
+});

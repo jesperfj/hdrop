@@ -1,0 +1,74 @@
+{
+  "Description" : "For running a dropbox service",
+  "Resources" : {
+
+    "HDropBucket" : {
+      "Type" : "AWS::S3::Bucket"
+    },
+
+    "BucketPolicy" : {
+      "Type" : "AWS::S3::BucketPolicy",
+      "Properties" : {
+        "PolicyDocument": {
+          "Id"           : "Give access to user",
+          "Statement"    : [{
+            "Sid"        : "AllAccess",
+            "Action"     : ["s3:*"],
+            "Effect"     : "Allow",
+            "Resource"   : { "Fn::Join" : ["", ["arn:aws:s3:::", {"Ref" : "HDropBucket"} ]]},
+            "Principal"  : { "AWS": {"Fn::GetAtt" : ["HDropUser", "Arn"]} }
+          }]
+        },
+        "Bucket" : {"Ref" : "HDropBucket"}
+      }
+    },
+
+    "HDropUser" : {
+      "Type" : "AWS::IAM::User",
+      "Properties" : {
+        "Policies" : [{
+          "PolicyName" : "S3Access",
+          "PolicyDocument" : {
+            "Statement": [
+              {
+                "Effect"   : "Allow",
+                "Action"   : "s3:ListAllMyBuckets",
+                "Resource" : "*"
+              },
+              {
+                "Effect"   : "Allow",
+                "Action"   : "s3:*",
+                "Resource" : { "Fn::Join" : ["", ["arn:aws:s3:::", {"Ref" : "HDropBucket"} , "/*"]]}
+              }
+            ]
+          }
+        }]
+      }
+    },
+
+    "HDropAccessKey" : {
+      "Type" : "AWS::IAM::AccessKey",
+      "Properties" : {
+        "UserName" : { "Ref" : "HDropUser" }
+      }
+    }
+
+
+  },
+
+  "Outputs" : {
+    "BUCKETNAME" : {
+      "Value" : { "Ref" : "HDropBucket" },
+      "Description" : "Name of newly created customer S3 bucket"
+    },
+
+    "ACCESSKEY" : {
+      "Value" : { "Ref" : "HDropAccessKey" }
+    },
+    "SECRETKEY" : {
+      "Value" : {
+        "Fn::GetAtt" : [ "HDropAccessKey", "SecretAccessKey" ]
+      }
+    }
+  }
+}

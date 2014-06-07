@@ -39,6 +39,7 @@ function stackOutput(name) {
         setTimeout(stackOutput, 5000, name);
       } else {
         console.log('');
+        console.log(Stacks[0].StackStatus);
         console.log(data.Stacks[0].Outputs.map(function(p) { return p.OutputKey+'='+p.OutputValue }).join('\n'));
       }
     }
